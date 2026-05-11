@@ -131,11 +131,12 @@ function announceWinner() {
   if (count === 0) return;
 
   const sliceAngle = (Math.PI * 2) / count;
-  // The pointer is at the top (–π/2). Normalize the angle.
-  const normalized = ((Math.PI * 2 - (currentAngle % (Math.PI * 2))) + Math.PI * 2) % (Math.PI * 2);
-  // Offset by half-pi so index 0 starts at the right
-  const pointerAngle = (normalized + Math.PI / 2) % (Math.PI * 2);
-  const winnerIndex = Math.floor(pointerAngle / sliceAngle) % count;
+  // The pointer is at the top of the canvas, which is angle -π/2 (i.e. 3π/2).
+  // Segment i spans from (currentAngle + i*sliceAngle) to (currentAngle + (i+1)*sliceAngle).
+  // We need to find which segment contains the pointer angle.
+  const pointerAngle = -Math.PI / 2;
+  const normalized = ((pointerAngle - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  const winnerIndex = Math.floor(normalized / sliceAngle) % count;
 
   resultEl.innerHTML = `<span class="winner-label">Winner:</span> 🎉 ${escapeHTML(fields[winnerIndex])}`;
 }
