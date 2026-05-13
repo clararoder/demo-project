@@ -135,7 +135,9 @@ function announceWinner() {
   // Segment i spans from (currentAngle + i*sliceAngle) to (currentAngle + (i+1)*sliceAngle).
   // We need to find which segment contains the pointer angle.
   const pointerAngle = -Math.PI / 2;
-  const normalized = ((pointerAngle - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  // Segments are laid out clockwise, so measure clockwise from the wheel's
+  // starting edge to the pointer to find which segment the pointer sits in.
+  const normalized = ((currentAngle - pointerAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
   const winnerIndex = Math.floor(normalized / sliceAngle) % count;
 
   resultEl.innerHTML = `<span class="winner-label">Winner:</span> 🎉 ${escapeHTML(fields[winnerIndex])}`;
