@@ -27,7 +27,7 @@ const addBtn = document.getElementById('add-btn');
 /* ── Drawing ─────────────────────────────────────────────────────── */
 
 function drawWheel() {
-  const size = canvas.width;
+  const size = parseFloat(canvas.style.width) || canvas.width;
   const center = size / 2;
   const radius = center - 4;
   const count = fields.length;
