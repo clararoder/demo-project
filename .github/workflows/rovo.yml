@@ -1,0 +1,90 @@
+name: Rovo Dev on PR comment
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  rovo:
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/rovo')
+    runs-on: ubuntu-latest
+    steps:
+      - name: React 👀 to comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes',
+            });
+
+      - name: Resolve PR head ref
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput('head_ref', pr.data.head.ref);
+            core.setOutput('head_repo', pr.data.head.repo.full_name);
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pr.outputs.head_repo }}
+          ref: ${{ steps.pr.outputs.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract prompt from comment
+        id: prompt
+        env:
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          prompt="${BODY#/rovo}"
+          prompt="${prompt# }"
+          delim="EOF_$(openssl rand -hex 8)"
+          {
+            echo "value<<$delim"
+            printf '%s\n' "$prompt"
+            echo "$delim"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Rovo Dev
+        uses: atlassian-labs/rovo-dev-action@v1
+        with:
+          prompt: ${{ steps.prompt.outputs.value }}
+          atlassian_email: ${{ secrets.ATLASSIAN_EMAIL }}
+          atlassian_token: ${{ secrets.ATLASSIAN_TOKEN }}
+
+      - name: Commit & push changes to PR branch
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "Rovo made no changes."
+            exit 0
+          fi
+          git config user.name "rovo-dev-bot"
+          git config user.email "rovo-dev-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "Rovo Dev changes (comment #${{ github.event.comment.id }})"
+          git push
+
+      - name: React ✅ on success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '+1',
+            });
