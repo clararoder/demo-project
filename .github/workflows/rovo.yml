@@ -49,12 +49,15 @@ jobs:
         env:
           BODY: ${{ github.event.comment.body }}
         run: |
-          prompt="${BODY#/rovo}"
-          prompt="${prompt# }"
+          user_prompt="${BODY#/rovo}"
+          user_prompt="${user_prompt# }"
+          full_prompt="$user_prompt
+
+IMPORTANT: In addition to any file changes you make, write your full response (analysis, review notes, summary, or answer) as Markdown to /tmp/rovo-output.md so it can be shown to the user on the PR. If you have nothing else to say beyond the file changes, write a one-line summary there."
           delim="EOF_$(openssl rand -hex 8)"
           {
             echo "value<<$delim"
-            printf '%s\n' "$prompt"
+            printf '%s\n' "$full_prompt"
             echo "$delim"
           } >> "$GITHUB_OUTPUT"
 
@@ -64,6 +67,29 @@ jobs:
           prompt: ${{ steps.prompt.outputs.value }}
           atlassian_email: ${{ secrets.ATLASSIAN_EMAIL }}
           atlassian_token: ${{ secrets.ATLASSIAN_TOKEN }}
+
+      - name: Post Rovo response as PR comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = '/tmp/rovo-output.md';
+            if (!fs.existsSync(path)) {
+              core.info('No /tmp/rovo-output.md produced by Rovo.');
+              return;
+            }
+            const body = fs.readFileSync(path, 'utf8').trim();
+            if (!body) {
+              core.info('/tmp/rovo-output.md was empty.');
+              return;
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body,
+            });
 
       - name: Commit & push changes to PR branch
         run: |
