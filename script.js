@@ -14,6 +14,7 @@ const MAX_SPIN_SECONDS = 10;
 let fields = ['Pizza', 'Sushi', 'Tacos', 'Burger', 'Pasta', 'Salad'];
 let spinning = false;
 let currentAngle = 0;
+let wheelSize = 420; // logical (CSS) size – updated by setupCanvas()
 
 /* ── DOM refs ────────────────────────────────────────────────────── */
 
@@ -27,7 +28,7 @@ const addBtn = document.getElementById('add-btn');
 /* ── Drawing ─────────────────────────────────────────────────────── */
 
 function drawWheel() {
-  const size = canvas.width;
+  const size = wheelSize;
   const center = size / 2;
   const radius = center - 4;
   const count = fields.length;
@@ -213,6 +214,8 @@ function setupCanvas() {
   canvas.width = rect.width * dpr;
   canvas.height = rect.height * dpr;
   ctx.scale(dpr, dpr);
+  // Store the logical (CSS) size for drawing calculations
+  wheelSize = rect.width;
   // Reset the CSS size so layout doesn't change
   canvas.style.width = rect.width + 'px';
   canvas.style.height = rect.height + 'px';
