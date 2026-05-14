@@ -11,7 +11,7 @@ const MAX_SPIN_SECONDS = 10;
 
 /* ── State ───────────────────────────────────────────────────────── */
 
-let fields = ['Pizza', 'Sushi', 'Tacos', 'Burger', 'Pasta', 'Salad'];
+let fields = ['Joe\'s Pizza', 'Le Bernardin', 'Peter Luger', 'Katz\'s Deli', 'Di Fara Pizza', 'Tatiana'];
 let spinning = false;
 let currentAngle = 0;
 
