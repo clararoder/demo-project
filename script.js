@@ -6,12 +6,28 @@ const SEGMENT_COLORS = [
   '#c0392b', '#2c3e50', '#16a085', '#e67e22',
 ];
 
+const DEMO_PLACE_QUERIES = {
+  "Joe's Pizza": "Joe's Pizza, 7 Carmine St, New York, NY 10014",
+  'Le Bernardin': 'Le Bernardin, 155 W 51st St, New York, NY 10019',
+  'Peter Luger': 'Peter Luger Steak House, 178 Broadway, Brooklyn, NY 11211',
+  "Katz's Deli": "Katz's Delicatessen, 205 E Houston St, New York, NY 10002",
+  'Di Fara Pizza': 'Di Fara Pizza, 1424 Avenue J, Brooklyn, NY 11230',
+  'Tatiana': 'Tatiana by Kwame Onwuachi, 10 Lincoln Center Plaza, New York, NY 10023',
+};
+
 const MIN_SPIN_SECONDS = 2;
 const MAX_SPIN_SECONDS = 10;
 
 /* ── State ───────────────────────────────────────────────────────── */
 
-let fields = ['Joe\'s Pizza', 'Le Bernardin', 'Peter Luger', 'Katz\'s Deli', 'Di Fara Pizza', 'Tatiana'];
+let fields = [
+  { label: "Joe's Pizza", info: '' },
+  { label: 'Le Bernardin', info: '' },
+  { label: 'Peter Luger', info: '' },
+  { label: "Katz's Deli", info: '' },
+  { label: 'Di Fara Pizza', info: '' },
+  { label: 'Tatiana', info: '' },
+];
 let spinning = false;
 let currentAngle = 0;
 
@@ -72,7 +88,8 @@ function drawWheel() {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#fff';
     ctx.font = `bold ${Math.min(16, 200 / count)}px sans-serif`;
-    const label = fields[i].length > 18 ? fields[i].slice(0, 16) + '…' : fields[i];
+    const fieldLabel = fields[i].label || '';
+    const label = fieldLabel.length > 18 ? fieldLabel.slice(0, 16) + '…' : fieldLabel || '—';
     ctx.fillText(label, radius - 14, 0);
     ctx.restore();
   }
@@ -138,14 +155,24 @@ function announceWinner() {
   const normalized = ((pointerAngle - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
   const winnerIndex = Math.floor(normalized / sliceAngle) % count;
 
-  resultEl.innerHTML = `<span class="winner-label">Winner:</span> 🎉 ${escapeHTML(fields[winnerIndex])}`;
+  const winner = fields[winnerIndex];
+  const winnerLabel = escapeHTML(winner?.label || '');
+  const winnerInfo = winner?.info ? escapeHTML(winner.info) : '';
+  const mapsQuery = buildMapsQuery(winner);
+  const mapsLink = mapsQuery
+    ? `<a class="winner-link" href="${mapsQuery}" target="_blank" rel="noopener">View on Google Maps</a>`
+    : '';
+  const infoMarkup = winnerInfo ? `<div class="winner-info">${winnerInfo}</div>` : '';
+  const linkMarkup = mapsLink ? `<div class="winner-map">${mapsLink}</div>` : '';
+
+  resultEl.innerHTML = `<span class="winner-label">Winner:</span> 🎉 ${winnerLabel}${infoMarkup}${linkMarkup}`;
 }
 
 /* ── Field management ────────────────────────────────────────────── */
 
 function renderFields() {
   fieldList.innerHTML = '';
-  fields.forEach((value, i) => {
+  fields.forEach((field, i) => {
     const li = document.createElement('li');
     li.className = 'field-item';
 
@@ -153,14 +180,24 @@ function renderFields() {
     dot.className = 'color-dot';
     dot.style.backgroundColor = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = value;
-    input.placeholder = 'Enter label…';
-    input.setAttribute('aria-label', `Segment ${i + 1}`);
-    input.addEventListener('input', () => {
-      fields[i] = input.value;
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.value = field.label;
+    labelInput.placeholder = 'Enter label…';
+    labelInput.setAttribute('aria-label', `Segment ${i + 1} label`);
+    labelInput.addEventListener('input', () => {
+      fields[i].label = labelInput.value;
       drawWheel();
+    });
+
+    const infoInput = document.createElement('input');
+    infoInput.type = 'text';
+    infoInput.value = field.info || '';
+    infoInput.placeholder = 'Add more info…';
+    infoInput.className = 'info-input';
+    infoInput.setAttribute('aria-label', `Segment ${i + 1} info`);
+    infoInput.addEventListener('input', () => {
+      fields[i].info = infoInput.value;
     });
 
     const removeBtn = document.createElement('button');
@@ -175,20 +212,20 @@ function renderFields() {
       updateSpinButton();
     });
 
-    li.append(dot, input, removeBtn);
+    li.append(dot, labelInput, infoInput, removeBtn);
     fieldList.appendChild(li);
   });
 }
 
 function addField() {
-  fields.push('');
+  fields.push({ label: '', info: '' });
   renderFields();
   drawWheel();
   updateSpinButton();
-  // Focus the new input
+  // Focus the new label input
   const inputs = fieldList.querySelectorAll('input');
   if (inputs.length > 0) {
-    inputs[inputs.length - 1].focus();
+    inputs[inputs.length - 2]?.focus();
   }
 }
 
@@ -203,6 +240,12 @@ function escapeHTML(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+function buildMapsQuery(field) {
+  if (!field?.label) return '';
+  const query = DEMO_PLACE_QUERIES[field.label] || field.label;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 /* ── Canvas DPI scaling ──────────────────────────────────────────── */
