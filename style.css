@@ -122,12 +122,36 @@ main {
   min-height: 2rem;
   text-align: center;
   font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 #result .winner-label {
   color: var(--text-muted);
   font-weight: 400;
   font-size: 1rem;
+}
+
+#result .winner-info {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+#result .winner-map {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+#result .winner-link {
+  color: #7ed6ff;
+  text-decoration: none;
+}
+
+#result .winner-link:hover {
+  text-decoration: underline;
 }
 
 /* ── Fields section ────────────────────── */
@@ -163,19 +187,27 @@ main {
 }
 
 .field-item input {
-  flex: 1;
   padding: 0.55rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--input-bg);
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .field-item input:focus {
   border-color: var(--primary);
+}
+
+.field-item input:first-of-type {
+  flex: 1.2;
+}
+
+.field-item .info-input {
+  flex: 1;
+  color: var(--text-muted);
 }
 
 .field-item .color-dot {
