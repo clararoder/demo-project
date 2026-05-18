@@ -21,12 +21,12 @@ const MAX_SPIN_SECONDS = 10;
 /* ── State ───────────────────────────────────────────────────────── */
 
 let fields = [
-  { label: "Joe's Pizza", info: '' },
-  { label: 'Le Bernardin', info: '' },
-  { label: 'Peter Luger', info: '' },
-  { label: "Katz's Deli", info: '' },
-  { label: 'Di Fara Pizza', info: '' },
-  { label: 'Tatiana', info: '' },
+  { label: "Joe's Pizza" },
+  { label: 'Le Bernardin' },
+  { label: 'Peter Luger' },
+  { label: "Katz's Deli" },
+  { label: 'Di Fara Pizza' },
+  { label: 'Tatiana' },
 ];
 let spinning = false;
 let currentAngle = 0;
@@ -157,15 +157,13 @@ function announceWinner() {
 
   const winner = fields[winnerIndex];
   const winnerLabel = escapeHTML(winner?.label || '');
-  const winnerInfo = winner?.info ? escapeHTML(winner.info) : '';
   const mapsQuery = buildMapsQuery(winner);
   const mapsLink = mapsQuery
     ? `<a class="winner-link" href="${mapsQuery}" target="_blank" rel="noopener">View on Google Maps</a>`
     : '';
-  const infoMarkup = winnerInfo ? `<div class="winner-info">${winnerInfo}</div>` : '';
   const linkMarkup = mapsLink ? `<div class="winner-map">${mapsLink}</div>` : '';
 
-  resultEl.innerHTML = `<span class="winner-label">Winner:</span> 🎉 ${winnerLabel}${infoMarkup}${linkMarkup}`;
+  resultEl.innerHTML = `<span class="winner-label">Winner:</span> 🎉 ${winnerLabel}${linkMarkup}`;
 }
 
 /* ── Field management ────────────────────────────────────────────── */
@@ -190,16 +188,6 @@ function renderFields() {
       drawWheel();
     });
 
-    const infoInput = document.createElement('input');
-    infoInput.type = 'text';
-    infoInput.value = field.info || '';
-    infoInput.placeholder = 'Add more info…';
-    infoInput.className = 'info-input';
-    infoInput.setAttribute('aria-label', `Segment ${i + 1} info`);
-    infoInput.addEventListener('input', () => {
-      fields[i].info = infoInput.value;
-    });
-
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-btn';
     removeBtn.title = 'Remove';
@@ -212,20 +200,20 @@ function renderFields() {
       updateSpinButton();
     });
 
-    li.append(dot, labelInput, infoInput, removeBtn);
+    li.append(dot, labelInput, removeBtn);
     fieldList.appendChild(li);
   });
 }
 
 function addField() {
-  fields.push({ label: '', info: '' });
+  fields.push({ label: '' });
   renderFields();
   drawWheel();
   updateSpinButton();
   // Focus the new label input
   const inputs = fieldList.querySelectorAll('input');
   if (inputs.length > 0) {
-    inputs[inputs.length - 2]?.focus();
+    inputs[inputs.length - 1]?.focus();
   }
 }
 
