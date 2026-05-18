@@ -134,12 +134,6 @@ main {
   font-size: 1rem;
 }
 
-#result .winner-info {
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: var(--text-muted);
-}
-
 #result .winner-map {
   font-size: 0.95rem;
   font-weight: 500;
@@ -202,12 +196,7 @@ main {
 }
 
 .field-item input:first-of-type {
-  flex: 1.2;
-}
-
-.field-item .info-input {
   flex: 1;
-  color: var(--text-muted);
 }
 
 .field-item .color-dot {
